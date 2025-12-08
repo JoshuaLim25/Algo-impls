@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merge Two Sorted Lists Visualizer</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #f0f0f0;
+        }
+        
+        .container {
+            background: #2d2d2d;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #4fc3f7;
+            margin-bottom: 30px;
+        }
+        
+        .lists-container {
+            display: flex;
+            justify-content: space-between;
+            margin: 30px 0;
+            gap: 20px;
+        }
+        
+        .list {
+            flex: 1;
+            background: #383838;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        
+        .list h3 {
+            margin-top: 0;
+            color: #81c784;
+        }
+        
+        .node {
+            display: inline-block;
+            background: #4fc3f7;
+            color: #1a1a1a;
+            padding: 10px 15px;
+            margin: 5px;
+            border-radius: 6px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .node.current {
+            background: #ff9800;
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(255, 152, 0, 0.5);
+        }
+        
+        .node.processed {
+            background: #666;
+            color: #999;
+        }
+        
+        .arrow {
+            color: #4fc3f7;
+            font-size: 18px;
+            margin: 0 5px;
+        }
+        
+        .result {
+            background: #1b5e20;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .result h3 {
+            color: #a5d6a7;
+            margin-top: 0;
+        }
+        
+        .dummy {
+            background: #f44336;
+            color: white;
+        }
+        
+        .current-pointer {
+            background: #9c27b0;
+            color: white;
+        }
+        
+        .controls {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        button {
+            background: #4fc3f7;
+            color: #1a1a1a;
+            border: none;
+            padding: 12px 24px;
+            margin: 0 10px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover:not(:disabled) {
+            background: #29b6f6;
+            transform: translateY(-2px);
+        }
+        
+        button:disabled {
+            background: #666;
+            color: #999;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .step-info {
+            background: #424242;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #4fc3f7;
+        }
+        
+        .step-info h4 {
+            margin-top: 0;
+            color: #4fc3f7;
+        }
+        
+        .code {
+            background: #1a1a1a;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 3px solid #4fc3f7;
+            font-family: 'Courier New', monospace;
+            color: #a5d6a7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Merge Two Sorted Lists - Step by Step</h1>
+        
+        <div class="lists-container">
+            <div class="list">
+                <h3>List 1 (l1)</h3>
+                <div id="l1-display"></div>
+            </div>
+            <div class="list">
+                <h3>List 2 (l2)</h3>
+                <div id="l2-display"></div>
+            </div>
+        </div>
+        
+        <div class="result">
+            <h3>Merged Result</h3>
+            <div id="result-display"></div>
+        </div>
+        
+        <div class="step-info">
+            <h4>Step <span id="step-number">0</span></h4>
+            <div id="step-description"></div>
+            <div class="code" id="code-highlight"></div>
+        </div>
+        
+        <div class="controls">
+            <button onclick="reset()">Reset</button>
+            <button onclick="nextStep()" id="next-btn">Next Step</button>
+            <button onclick="prevStep()" id="prev-btn" disabled>Previous Step</button>
+        </div>
+    </div>
+
+    <script>
+        // Initial data
+        const l1Data = [1, 3, 5];
+        const l2Data = [2, 4, 6];
+        
+        // State
+        let l1Index = 0;
+        let l2Index = 0;
+        let result = [];
+        let currentStep = 0;
+        let dummy = true; // dummy node exists
+        let currentPointer = 0; // points to last added node in result
+        
+        const steps = [
+            {
+                description: "Initialize: Create dummy node and current pointer",
+                code: "dummy := &ListNode{}\ncurrent := dummy",
+                action: () => {
+                    result = ['dummy'];
+                    currentPointer = 0;
+                }
+            },
+            {
+                description: "Compare l1[0]=1 vs l2[0]=2. Choose smaller (1)",
+                code: "if l1.Val <= l2.Val {\n    current.Next = l1\n    l1 = l1.Next\n}",
+                action: () => {
+                    result.push(l1Data[l1Index]);
+                    l1Index++;
+                    currentPointer++;
+                }
+            },
+            {
+                description: "Move current pointer forward",
+                code: "current = current.Next",
+                action: () => {
+                    // currentPointer already moved in previous step
+                }
+            },
+            {
+                description: "Compare l1[1]=3 vs l2[0]=2. Choose smaller (2)",
+                code: "if l1.Val <= l2.Val {\n    // false\n} else {\n    current.Next = l2\n    l2 = l2.Next\n}",
+                action: () => {
+                    result.push(l2Data[l2Index]);
+                    l2Index++;
+                    currentPointer++;
+                }
+            },
+            {
+                description: "Move current pointer forward",
+                code: "current = current.Next",
+                action: () => {
+                    // currentPointer already moved
+                }
+            },
+            {
+                description: "Compare l1[1]=3 vs l2[1]=4. Choose smaller (3)",
+                code: "if l1.Val <= l2.Val {\n    current.Next = l1\n    l1 = l1.Next\n}",
+                action: () => {
+                    result.push(l1Data[l1Index]);
+                    l1Index++;
+                    currentPointer++;
+                }
+            },
+            {
+                description: "Move current pointer forward",
+                code: "current = current.Next",
+                action: () => {
+                    // currentPointer already moved
+                }
+            },
+            {
+                description: "Compare l1[2]=5 vs l2[1]=4. Choose smaller (4)",
+                code: "if l1.Val <= l2.Val {\n    // false\n} else {\n    current.Next = l2\n    l2 = l2.Next\n}",
+                action: () => {
+                    result.push(l2Data[l2Index]);
+                    l2Index++;
+                    currentPointer++;
+                }
+            },
+            {
+                description: "Move current pointer forward",
+                code: "current = current.Next",
+                action: () => {
+                    // currentPointer already moved
+                }
+            },
+            {
+                description: "Compare l1[2]=5 vs l2[2]=6. Choose smaller (5)",
+                code: "if l1.Val <= l2.Val {\n    current.Next = l1\n    l1 = l1.Next\n}",
+                action: () => {
+                    result.push(l1Data[l1Index]);
+                    l1Index++;
+                    currentPointer++;
+                }
+            },
+            {
+                description: "Move current pointer forward",
+                code: "current = current.Next",
+                action: () => {
+                    // currentPointer already moved
+                }
+            },
+            {
+                description: "l1 is exhausted. Append remaining l2 nodes",
+                code: "if l1 != nil {\n    // false\n} else {\n    current.Next = l2\n}",
+                action: () => {
+                    result.push(l2Data[l2Index]);
+                    l2Index++;
+                    currentPointer++;
+                }
+            },
+            {
+                description: "Return dummy.Next (skip dummy node)",
+                code: "return dummy.Next",
+                action: () => {
+                    // Final result ready
+                }
+            }
+        ];
+        
+        function render() {
+            // Render l1
+            const l1Display = document.getElementById('l1-display');
+            l1Display.innerHTML = '';
+            l1Data.forEach((val, i) => {
+                const node = document.createElement('span');
+                node.className = 'node';
+                if (i < l1Index) node.className += ' processed';
+                if (i === l1Index) node.className += ' current';
+                node.textContent = val;
+                l1Display.appendChild(node);
+                if (i < l1Data.length - 1) {
+                    const arrow = document.createElement('span');
+                    arrow.className = 'arrow';
+                    arrow.textContent = '→';
+                    l1Display.appendChild(arrow);
+                }
+            });
+            
+            // Render l2
+            const l2Display = document.getElementById('l2-display');
+            l2Display.innerHTML = '';
+            l2Data.forEach((val, i) => {
+                const node = document.createElement('span');
+                node.className = 'node';
+                if (i < l2Index) node.className += ' processed';
+                if (i === l2Index) node.className += ' current';
+                node.textContent = val;
+                l2Display.appendChild(node);
+                if (i < l2Data.length - 1) {
+                    const arrow = document.createElement('span');
+                    arrow.className = 'arrow';
+                    arrow.textContent = '→';
+                    l2Display.appendChild(arrow);
+                }
+            });
+            
+            // Render result
+            const resultDisplay = document.getElementById('result-display');
+            resultDisplay.innerHTML = '';
+            result.forEach((val, i) => {
+                const node = document.createElement('span');
+                node.className = 'node';
+                if (val === 'dummy') node.className += ' dummy';
+                if (i === currentPointer) node.className += ' current-pointer';
+                node.textContent = val;
+                resultDisplay.appendChild(node);
+                if (i < result.length - 1) {
+                    const arrow = document.createElement('span');
+                    arrow.className = 'arrow';
+                    arrow.textContent = '→';
+                    resultDisplay.appendChild(arrow);
+                }
+            });
+            
+            // Update step info
+            document.getElementById('step-number').textContent = currentStep;
+            document.getElementById('step-description').textContent = 
+                currentStep === 0 ? "Ready to start merging!" : steps[currentStep - 1].description;
+            document.getElementById('code-highlight').textContent = 
+                currentStep === 0 ? "Click 'Next Step' to begin" : steps[currentStep - 1].code;
+            
+            // Update button states
+            document.getElementById('prev-btn').disabled = currentStep === 0;
+            document.getElementById('next-btn').disabled = currentStep >= steps.length;
+        }
+        
+        function nextStep() {
+            if (currentStep < steps.length) {
+                steps[currentStep].action();
+                currentStep++;
+                render();
+            }
+        }
+        
+        function prevStep() {
+            if (currentStep > 0) {
+                currentStep--;
+                reset();
+                // Re-execute all steps up to current
+                for (let i = 0; i < currentStep; i++) {
+                    steps[i].action();
+                }
+                render();
+            }
+        }
+        
+        function reset() {
+            l1Index = 0;
+            l2Index = 0;
+            result = [];
+            currentStep = 0;
+            currentPointer = 0;
+            render();
+        }
+        
+        // Initial render
+        render();
+    </script>
+</body>
+</html>

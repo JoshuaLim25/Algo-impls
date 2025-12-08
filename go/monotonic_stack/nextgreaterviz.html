@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Next Greater Element Visualization</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            margin: 20px;
+            background: #1a1a1a;
+            color: #e0e0e0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #2a2a2a;
+            border-radius: 8px;
+            border-left: 4px solid #4a9eff;
+        }
+        .array-viz {
+            display: flex;
+            gap: 5px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        .cell {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #555;
+            background: #333;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .current {
+            background: #4a9eff;
+            color: white;
+        }
+        .processed {
+            background: #2d5a2d;
+            border-color: #4a9a4a;
+        }
+        .stack-cell {
+            background: #5a4a2d;
+            border-color: #9a8a4a;
+        }
+        .result-cell {
+            background: #5a2d5a;
+            border-color: #9a4a9a;
+        }
+        .step {
+            margin: 10px 0;
+            padding: 10px;
+            background: #333;
+            border-radius: 4px;
+        }
+        .highlight {
+            color: #4a9eff;
+            font-weight: bold;
+        }
+        button {
+            background: #4a9eff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #357abd;
+        }
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .comparison > div {
+            padding: 15px;
+            background: #333;
+            border-radius: 4px;
+        }
+        h3 {
+            color: #4a9eff;
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Next Greater Element: Linear vs Circular</h1>
+        
+        <div class="section">
+            <h3>Key Difference</h3>
+            <div class="comparison">
+                <div>
+                    <h4>Linear Version</h4>
+                    <p><strong>Input:</strong> [2, 1, 2, 4, 3, 1]</p>
+                    <p><strong>Rule:</strong> Find next greater element to the <span class="highlight">right only</span></p>
+                    <p><strong>Result:</strong> [4, 2, 4, -1, -1, -1]</p>
+                    <p>Last elements often have no answer because there's nothing after them.</p>
+                </div>
+                <div>
+                    <h4>Circular Version</h4>
+                    <p><strong>Input:</strong> [2, 1, 2, 4, 3, 1]</p>
+                    <p><strong>Rule:</strong> Array <span class="highlight">wraps around</span> - after last element, continue from first</p>
+                    <p><strong>Result:</strong> [4, 2, 4, -1, 4, 2]</p>
+                    <p>More elements get answers because we can "wrap around" to the beginning.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>Interactive Simulation</h3>
+            <p>Array: <span id="currentArray">[2, 1, 2, 4, 3, 1]</span></p>
+            <p>Mode: <span id="currentMode">Circular</span></p>
+            
+            <div>
+                <button onclick="setMode('linear')">Linear Mode</button>
+                <button onclick="setMode('circular')">Circular Mode</button>
+                <button onclick="resetSimulation()">Reset</button>
+                <button onclick="nextStep()">Next Step</button>
+                <button onclick="autoStep()">Auto Step</button>
+            </div>
+
+            <div id="visualization">
+                <div>
+                    <h4>Current State (i = <span id="currentI">0</span>, processing: <span id="currentNum">2</span>)</h4>
+                    <div class="array-viz" id="arrayViz"></div>
+                </div>
+                
+                <div>
+                    <h4>Stack (indices of elements waiting for their next greater)</h4>
+                    <div class="array-viz" id="stackViz"></div>
+                </div>
+                
+                <div>
+                    <h4>Result Array</h4>
+                    <div class="array-viz" id="resultViz"></div>
+                </div>
+                
+                <div id="stepInfo" class="step"></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>The Magic of "Processing Twice"</h3>
+            <p>In circular version, we iterate <span class="highlight">2 * n</span> times:</p>
+            <ul>
+                <li><strong>First pass (i = 0 to n-1):</strong> Normal processing + push indices to stack</li>
+                <li><strong>Second pass (i = n to 2n-1):</strong> Only pop from stack (no new pushes)</li>
+            </ul>
+            <p>This simulates going around the circle once. Elements that couldn't find their next greater in the first pass get a second chance.</p>
+        </div>
+    </div>
+
+    <script>
+        let nums = [2, 1, 2, 4, 3, 1];
+        let stack = [];
+        let result = [];
+        let currentStep = 0;
+        let mode = 'circular';
+        let maxSteps = 0;
+        let autoInterval = null;
+
+        function setMode(newMode) {
+            mode = newMode;
+            resetSimulation();
+            document.getElementById('currentMode').textContent = mode.charAt(0).toUpperCase() + mode.slice(1);
+        }
+
+        function resetSimulation() {
+            stack = [];
+            result = new Array(nums.length).fill(-1);
+            currentStep = 0;
+            maxSteps = mode === 'circular' ? nums.length * 2 : nums.length;
+            if (autoInterval) {
+                clearInterval(autoInterval);
+                autoInterval = null;
+            }
+            updateVisualization();
+        }
+
+        function nextStep() {
+            if (currentStep >= maxSteps) {
+                document.getElementById('stepInfo').innerHTML = '<span class="highlight">Algorithm Complete!</span>';
+                return;
+            }
+
+            const i = currentStep;
+            const actualIndex = mode === 'circular' ? i % nums.length : i;
+            const num = nums[actualIndex];
+
+            let stepInfo = `<strong>Step ${currentStep + 1}:</strong> i=${i}`;
+            if (mode === 'circular') {
+                stepInfo += `, i%len=${actualIndex}`;
+            }
+            stepInfo += `, num=${num}<br>`;
+
+            // Pop elements from stack
+            let popped = [];
+            while (stack.length > 0 && num > nums[stack[stack.length - 1]]) {
+                const top = stack.pop();
+                result[top] = num;
+                popped.push(top);
+            }
+
+            if (popped.length > 0) {
+                stepInfo += `Popped indices: [${popped.join(', ')}] - they found their next greater: ${num}<br>`;
+            }
+
+            // Push current index (only in first pass for circular, always for linear)
+            if (mode === 'linear' || i < nums.length) {
+                stack.push(actualIndex);
+                stepInfo += `Pushed index ${actualIndex} to stack<br>`;
+            }
+
+            if (mode === 'circular' && i >= nums.length) {
+                stepInfo += `<em>Second pass - only popping, no pushing</em><br>`;
+            }
+
+            document.getElementById('stepInfo').innerHTML = stepInfo;
+            currentStep++;
+            updateVisualization();
+        }
+
+        function autoStep() {
+            if (autoInterval) {
+                clearInterval(autoInterval);
+                autoInterval = null;
+                return;
+            }
+            autoInterval = setInterval(() => {
+                if (currentStep >= maxSteps) {
+                    clearInterval(autoInterval);
+                    autoInterval = null;
+                    return;
+                }
+                nextStep();
+            }, 1000);
+        }
+
+        function updateVisualization() {
+            const currentI = currentStep < maxSteps ? currentStep : maxSteps - 1;
+            const actualIndex = mode === 'circular' ? currentI % nums.length : currentI;
+            const currentNum = currentStep < maxSteps ? nums[actualIndex] : '';
+
+            document.getElementById('currentI').textContent = currentI;
+            document.getElementById('currentNum').textContent = currentNum;
+
+            // Update array visualization
+            const arrayViz = document.getElementById('arrayViz');
+            arrayViz.innerHTML = '';
+            nums.forEach((num, idx) => {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                if (currentStep < maxSteps && idx === actualIndex) {
+                    cell.className += ' current';
+                } else if (currentStep > 0 && ((mode === 'linear' && idx < actualIndex) || 
+                          (mode === 'circular' && (idx < actualIndex || currentI >= nums.length)))) {
+                    cell.className += ' processed';
+                }
+                cell.textContent = num;
+                arrayViz.appendChild(cell);
+            });
+
+            // Update stack visualization
+            const stackViz = document.getElementById('stackViz');
+            stackViz.innerHTML = '';
+            if (stack.length === 0) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = 'cell';
+                emptyCell.textContent = '∅';
+                emptyCell.style.opacity = '0.5';
+                stackViz.appendChild(emptyCell);
+            } else {
+                stack.forEach(idx => {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell stack-cell';
+                    cell.textContent = `${idx}:${nums[idx]}`;
+                    cell.style.fontSize = '10px';
+                    stackViz.appendChild(cell);
+                });
+            }
+
+            // Update result visualization
+            const resultViz = document.getElementById('resultViz');
+            resultViz.innerHTML = '';
+            result.forEach(val => {
+                const cell = document.createElement('div');
+                cell.className = 'cell result-cell';
+                cell.textContent = val;
+                resultViz.appendChild(cell);
+            });
+        }
+
+        // Initialize
+        resetSimulation();
+    </script>
+</body>
+</html>

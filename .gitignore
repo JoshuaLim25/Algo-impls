@@ -1,0 +1,37 @@
+# General
+*.log
+*.tmp
+*.bak
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+*.iml
+.project
+.classpath
+.settings/
+*.vscode/
+
+# Java/Gradle
+build/
+.gradle/
+bin/
+out/
+*.class
+*.jar
+*.war
+*.ear
+
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+resources/

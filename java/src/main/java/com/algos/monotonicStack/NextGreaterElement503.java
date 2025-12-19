@@ -1,9 +1,11 @@
+package com.algos.monotonicStack;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
 
-public class NextGreaterElement {
+public class NextGreaterElement503 {
     /*
     Given a circular integer array nums (i.e., the next element of nums[nums.length - 1] is nums[0]), return the next
     greater number for every element in nums.
@@ -37,7 +39,7 @@ public class NextGreaterElement {
 
     public static void main(String[] args) {
         var nums = new ArrayList<>(List.of(1, 2, 1));
-        var res = NextGreaterElement.nextGreaterElement(nums);
+        var res = NextGreaterElement503.nextGreaterElement(nums);
         System.out.println("Expected [2,-1,2], got " + res);
     }
 

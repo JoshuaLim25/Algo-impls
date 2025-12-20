@@ -1,0 +1,1 @@
+- [look into this, scriptable + easy JUnit w/o gradle](https://github.com/jbangdev/jbang)

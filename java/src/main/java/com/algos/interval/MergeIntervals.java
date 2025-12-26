@@ -1,4 +1,4 @@
-package com.algos.intervals;
+package com.algos.interval;
 
 import java.util.ArrayList;
 import java.util.Comparator;

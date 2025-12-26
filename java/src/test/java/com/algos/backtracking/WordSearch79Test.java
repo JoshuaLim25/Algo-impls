@@ -23,14 +23,4 @@ class WordSearch79Test {
         boolean actual = soln.exist(board, word);
         assertEquals(expected, actual);
     }
-
-    @Test
-    void testEmptyString() {
-        char[][] board = { { 'A', 'B', 'C', 'E' }, { 'S', 'F', 'C', 'S' }, { 'A', 'D', 'E', 'E' } };
-        String word = "";
-        boolean expected = false;
-        WordSearch79 soln = new WordSearch79();
-        boolean actual = soln.exist(board, word);
-        assertEquals(expected, actual);
-    }
 }

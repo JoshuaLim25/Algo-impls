@@ -56,3 +56,21 @@ public class WordSearch79 {
         return false;
     }
 }
+
+
+/*
+exist()
+└─ search(0,0,0)
+   └─ search(0,1,1)
+      └─ search(0,2,2)
+         └─ search(1,2,3)
+            └─ search(2,2,4)
+               └─ search(2,1,5)
+                  └─ search(...,6) → returns TRUE
+               → returns TRUE
+            → returns TRUE
+         → returns TRUE
+      → returns TRUE
+   → returns TRUE
+→ returns TRUE
+*/
